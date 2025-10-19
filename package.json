@@ -1,0 +1,25 @@
+{
+  "name": "microservice-cicd",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint . --ext .js,.mjs,.cjs,.ts,.tsx",
+    "prepare": "husky install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dev-charan/microservice-CICD.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dev-charan/microservice-CICD/issues"
+  },
+  "homepage": "https://github.com/dev-charan/microservice-CICD#readme",
+  "devDependencies": {
+    "eslint": "^9.38.0",
+    "husky": "^9.1.7"
+  }
+}
