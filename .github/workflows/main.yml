@@ -2,48 +2,61 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ staging, main ]
+    branches: [staging, main]
   pull_request:
-    branches: [ staging, main ]
+    branches: [staging, main]
 
 jobs:
   lint-and-build:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-    - name: Install Notifier dependencies
-      run: cd notifier-service && pip install -r requirements.txt
+      - name: Install Notifier dependencies
+        run: |
+          cd notifier-service
+          pip install -r requirements.txt
 
-    - name: Lint Notifier
-      run: cd notifier-service && flake8 .
+      - name: Lint Notifier
+        run: |
+          cd notifier-service
+          flake8 .
 
-    - name: Build Docker images
-      run: docker-compose build
+      # ✅ Setup Docker Compose plugin
+      - name: Set up Docker Compose
+        uses: docker/compose-action@v2
+
+      - name: Build Docker images
+        run: docker compose build
 
   test-staging:
     runs-on: ubuntu-latest
     needs: lint-and-build
-    if: github.ref == 'refs/heads/staging' || github.event_name == 'pull_request' && github.base_ref == 'staging'
+    if: github.ref == 'refs/heads/staging' || (github.event_name == 'pull_request' && github.base_ref == 'staging')
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Start Docker containers
-      run: docker-compose up -d
+      # ✅ Setup Docker Compose plugin
+      - name: Set up Docker Compose
+        uses: docker/compose-action@v2
 
-    - name: Wait for services to be healthy
-      run: sleep 10
+      - name: Start Docker containers
+        run: docker compose up -d
 
-    - name: Test API service
-      run: |
-        curl --fail http://localhost:3000/todos
-        curl --fail -X POST http://localhost:3000/todos -H "Content-Type: application/json" -d '{"text": "Test todo"}'
+      - name: Wait for services to be healthy
+        run: sleep 10
 
-    - name: Stop containers
-      run: docker-compose down
+      - name: Test API service
+        run: |
+          curl --fail http://localhost:3000/todos
+          curl --fail -X POST http://localhost:3000/todos \
+            -H "Content-Type: application/json" \
+            -d '{"text": "Test todo"}'
+
+      - name: Stop containers
+        run: docker compose down
